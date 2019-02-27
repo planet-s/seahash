@@ -1,6 +1,6 @@
 [package]
 name = "seahash"
-version = "3.0.5"
+version = "3.0.6"
 authors = ["ticki <ticki@users.noreply.github.com>"]
 description = "A blazingly fast, portable hash function with proven statistical guarantees."
 repository = "https://gitlab.redox-os.org/redox-os/seahash"
