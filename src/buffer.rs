@@ -40,8 +40,8 @@ impl State {
 
             // The pointer to the current bytes.
             let mut ptr = buf.as_ptr();
-            /// The end of the "main segment", i.e. the biggest buffer s.t. the length is divisible
-            /// by 32.
+            // The end of the "main segment", i.e. the biggest buffer s.t. the length is divisible
+            // by 32.
             let end_ptr = buf.as_ptr().offset(buf.len() as isize & !0x1F);
 
             while end_ptr > ptr {
