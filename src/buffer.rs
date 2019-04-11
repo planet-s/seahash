@@ -40,8 +40,8 @@ impl State {
 
             // The pointer to the current bytes.
             let mut ptr = buf.as_ptr();
-            /// The end of the "main segment", i.e. the biggest buffer s.t. the length is divisible
-            /// by 32.
+            // The end of the "main segment", i.e. the biggest buffer s.t. the length is divisible
+            // by 32.
             let end_ptr = buf.as_ptr().offset(buf.len() as isize & !0x1F);
 
             while end_ptr > ptr {
@@ -174,10 +174,8 @@ impl State {
 
     /// Write another 64-bit integer into the state.
     pub fn push(&mut self, x: u64) {
-        let mut a = self.a;
-
         // Mix `x` into `a`.
-        a = helper::diffuse(a ^ x);
+        let a = helper::diffuse(self.a ^ x);
 
         //  Rotate around.
         //  _______________________
@@ -196,22 +194,20 @@ impl State {
     ///
     /// Given the value of the most recently written u64 `last`, remove it from the state.
     pub fn pop(&mut self, last: u64) {
-        // Decrese the written bytes counter.
-        self.written -= 8;
-
-        // Remove the recently written data.
-        self.d = helper::undiffuse(self.d) ^ last;
-
-        let mut a = self.a;
+        // Un-mix `last` from `d`. Removes the recently written data.
+        let d = helper::undiffuse(self.d) ^ last;
 
         //  Rotate back.
         //  _______________________
         // v                       |
         // a ----> b ----> c ----> d
-        self.a = self.d;
-        self.b = a;
-        self.c = self.b;
         self.d = self.c;
+        self.c = self.b;
+        self.b = self.a;
+        self.a = d;
+
+        // Decrese the written bytes counter.
+        self.written -= 8;
     }
 
     /// Finalize the state.
