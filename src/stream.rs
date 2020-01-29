@@ -3,6 +3,7 @@ use core::hash::Hasher;
 use {hash_seeded, helper};
 
 /// The streaming version of the algorithm.
+#[derive(Clone, Copy)]
 pub struct SeaHasher {
     /// The state of the hasher.
     state: u64,
