@@ -69,7 +69,7 @@ impl State {
             // Handle the excessive bytes.
             match excessive {
                 0 => {},
-                1...7 => {
+                1..=7 => {
                     // 1 or more excessive.
 
                     // Write the last excessive bytes (<8 bytes).
@@ -87,7 +87,7 @@ impl State {
                     // Diffuse.
                     a = helper::diffuse(a);
                 },
-                9...15 => {
+                9..=15 => {
                     // More than 8 bytes excessive.
 
                     // Mix in the partial block.
@@ -106,14 +106,10 @@ impl State {
                     // 16 bytes excessive.
 
                     // Mix in the partial block.
-                    a ^= helper::read_u64(ptr);
-                    b ^= helper::read_u64(ptr.offset(8));
-
-                    // Diffuse.
-                    a = helper::diffuse(a);
-                    b = helper::diffuse(b);
+                    a = helper::diffuse(a ^ helper::read_u64(ptr));
+                    b = helper::diffuse(b ^ helper::read_u64(ptr.offset(8)));
                 },
-                17...23 => {
+                17..=23 => {
                     // 16 bytes or more excessive.
 
                     // Mix in the partial block.
