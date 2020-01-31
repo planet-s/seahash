@@ -18,7 +18,7 @@ pub struct SeaHasher {
 
 impl Default for SeaHasher {
     fn default() -> SeaHasher {
-        SeaHasher::with_seeds(0xe7b0c93ca8525013, 0x011d02b854ae8182, 0x7bcc5cf9c39cec76, 0xfa336285d102d083)
+        SeaHasher::with_seeds(0x16f11fe89b0d677c, 0xb480a793d8e6c86c, 0x6fe2e5aaf078ebc9, 0x14f994a4c5259381)
     }
 }
 
