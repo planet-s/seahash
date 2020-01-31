@@ -73,7 +73,7 @@ pub unsafe fn read_u64(ptr: *const u8) -> u64 {
 ///
 /// This is a bijective function emitting chaotic behavior. Such functions are used as building
 /// blocks for hash functions.
-pub fn diffuse(mut x: u64) -> u64 {
+pub const fn diffuse(mut x: u64) -> u64 {
     // These are derived from the PCG RNG's round. Thanks to @Veedrac for proposing this. The basic
     // idea is that we use dynamic shifts, which are determined by the input itself. The shift is
     // chosen by the higher bits, which means that changing those flips the lower bits, which
@@ -89,7 +89,7 @@ pub fn diffuse(mut x: u64) -> u64 {
 }
 
 /// Reverse the `diffuse` function.
-pub fn undiffuse(mut x: u64) -> u64 {
+pub const fn undiffuse(mut x: u64) -> u64 {
     // 0x2f72b4215a3d8caf is the modular multiplicative inverse of the constant used in `diffuse`.
 
     x = x.wrapping_mul(0x2f72b4215a3d8caf);
