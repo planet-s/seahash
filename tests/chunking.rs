@@ -60,7 +60,5 @@ fn test_different_chunk_sizes() {
         let h2 = h2.finish();
 
         assert_eq!(h1, h2, "failed with chunk_len={}", chunk_len);
-
-        println!("ok: {}", chunk_len);
     }
 }
