@@ -92,7 +92,7 @@ impl SeaHasher {
                     9..=15 => {
                         self.push(helper::read_u64(ptr));
                         excessive -= 8;
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr, excessive));
+                        self.tail = helper::read_int(slice::from_raw_parts(ptr.offset(8), excessive));
                         self.ntail = excessive;
                     },
                     16 => {
