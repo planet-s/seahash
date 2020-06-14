@@ -77,6 +77,7 @@ impl SeaHasher {
                     self.state.3 = helper::diffuse(self.state.3 ^ helper::read_u64(ptr.offset(24)));
 
                     ptr = ptr.offset(32);
+                    self.written += 32;
                 }
                 let mut excessive = bytes.len() + bytes.as_ptr() as usize - ptr as usize;
                 match excessive {
