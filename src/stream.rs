@@ -67,7 +67,7 @@ impl SeaHasher {
                 self.ntail = 0;
                 self.tail = 0;
 
-                // We've done the existing tail, now just do the rest
+                // We've done the existing tail, now just do the rest in chunks of 4 x u64.
                 ptr = ptr.offset(copied as isize);
                 let end_ptr = ptr.offset((bytes.len()-copied) as isize & !0x1F);
                 while end_ptr > ptr {
@@ -77,22 +77,29 @@ impl SeaHasher {
                     self.state.3 = helper::diffuse(self.state.3 ^ helper::read_u64(ptr.offset(24)));
 
                     ptr = ptr.offset(32);
+                    self.written += 32;
                 }
                 let mut excessive = bytes.len() + bytes.as_ptr() as usize - ptr as usize;
                 match excessive {
-                    0 => {},
+                    0 => {
+                        // input was a multiple of 4 x u64 bytes long; no new tail bytes.
+                    },
                     1..=7 => {
                         self.tail = helper::read_int(slice::from_raw_parts(ptr as *const u8, excessive));
                         self.ntail = excessive;
+                        // self.written does not need to be updated as we only gathered self.tail
+                        // bytes after larger chunks.
                     },
                     8 => {
                         self.push(helper::read_u64(ptr));
+                        // self.written is updated by self.push
                     },
                     9..=15 => {
                         self.push(helper::read_u64(ptr));
                         excessive -= 8;
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr, excessive));
+                        self.tail = helper::read_int(slice::from_raw_parts(ptr.offset(8), excessive));
                         self.ntail = excessive;
+                        // self.written is updated by self.push
                     },
                     16 => {
                         let a = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
