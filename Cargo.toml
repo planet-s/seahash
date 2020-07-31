@@ -6,8 +6,12 @@ description = "A blazingly fast, portable hash function with proven statistical 
 repository = "https://gitlab.redox-os.org/redox-os/seahash"
 documentation = "https://docs.rs/seahash"
 license = "MIT"
-keywords = ["hash", "hashing", "checksum", "checsumming", "portable"]
+keywords = ["hash", "hashing", "checksum", "checksumming", "portable"]
 exclude = ["target", "Cargo.lock"]
 
 [dev-dependencies]
 quickcheck = "0.9.2"
+
+[features]
+default = []
+use_std = []
