@@ -1,5 +1,5 @@
-use core::hash::Hasher;
-use core::slice;
+use std::hash::Hasher;
+use std::slice;
 
 use helper;
 
@@ -213,7 +213,7 @@ impl Hasher for SeaHasher {
 mod tests {
     use super::*;
     use crate::hash_seeded;
-    use core::hash::Hasher;
+    use std::hash::Hasher;
 
     #[test]
     fn chunked_equiv() {

@@ -1,6 +1,6 @@
 //! A highly optimized version of SeaHash.
 
-use core::slice;
+use std::slice;
 
 use helper;
 
