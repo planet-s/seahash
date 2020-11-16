@@ -1,14 +1,12 @@
-#![feature(test)]
-
-extern crate test;
 extern crate seahash;
 extern crate core;
+extern crate criterion;
 
 use core::hash::Hasher;
+use criterion::{criterion_group, criterion_main, Criterion};
 
-#[bench]
-fn gigabyte(b: &mut test::Bencher) {
-    b.iter(|| {
+fn gigabyte(c: &mut Criterion) {
+    c.bench_function("gigabyte", |b| b.iter(|| {
         let mut x = 0;
         let mut buf = [15; 4096];
 
@@ -18,12 +16,9 @@ fn gigabyte(b: &mut test::Bencher) {
         }
 
         x
-    })
-}
+    }));
 
-#[bench]
-fn gigabyte_stream(b: &mut test::Bencher) {
-    b.iter(|| {
+    c.bench_function("gigabyte_stream", |b| b.iter(|| {
         let mut buf = [15;4096];
         let mut hasher = seahash::SeaHasher::default();
 
@@ -32,5 +27,8 @@ fn gigabyte_stream(b: &mut test::Bencher) {
             buf[0] += buf[0].wrapping_add(1);
         }
         hasher.finish()
-    })
+    }));
 }
+
+criterion_group!(benches, gigabyte);
+criterion_main!(benches);
