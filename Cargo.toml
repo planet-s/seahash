@@ -18,5 +18,5 @@ default = []
 use_std = []
 
 [[bench]]
-name = "gigabyte"
+name = "bench"
 harness = false
