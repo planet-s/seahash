@@ -47,6 +47,37 @@ fn describe_benches(c: &mut Criterion) {
     }
 
     group.finish();
+
+    // gigabyte group times are comparable with earlier benchmark values based on
+    // d52d115a223a0e81d1600bd8a5e73cb4b24a38c0
+    let mut group = c.benchmark_group("gigabyte");
+    group.throughput(Throughput::Bytes((1024 * 1024 * 1024) as u64));
+
+    group.bench_function(BenchmarkId::from_parameter("buffer"), |b| {
+        b.iter(|| {
+            let mut buf = [15; 4096];
+            let mut total = 0;
+            for _ in 0..250_000 {
+                total ^= seahash::hash(&buf);
+                buf[0] = buf[0].wrapping_add(1);
+            }
+            black_box(total)
+        })
+    });
+
+    group.bench_function(BenchmarkId::from_parameter("stream"), |b| {
+        b.iter(|| {
+            let mut buf = [15; 4096];
+            let mut h = seahash::SeaHasher::default();
+            for _ in 0..250_000 {
+                h.write(&buf);
+                buf[0] = buf[0].wrapping_add(1);
+            }
+            black_box(h.finish())
+        })
+    });
+
+    group.finish();
 }
 
 criterion_group!(benches, describe_benches);
