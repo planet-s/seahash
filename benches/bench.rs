@@ -1,9 +1,9 @@
-extern crate seahash;
 extern crate core;
 extern crate criterion;
+extern crate seahash;
 
 use core::hash::Hasher;
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
 fn describe_benches(c: &mut Criterion) {
     // shared buffers for all tests
@@ -36,13 +36,14 @@ fn describe_benches(c: &mut Criterion) {
                 || seahash::SeaHasher::default(),
                 |mut h: seahash::SeaHasher| {
                     // use chunks of 32 bytes to simulate some looping on a single hasher value
-                    for _ in 0..size/32 {
+                    for _ in 0..size / 32 {
                         h.write(&buf[..32]);
                     }
                     // this will mostly be an empty slice, but that is a possible Hasher api usage
                     h.write(&buf[..(size % 32)]);
                     black_box(h.finish())
-            })
+                },
+            )
         });
     }
 
