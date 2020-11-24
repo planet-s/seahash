@@ -11,7 +11,12 @@ exclude = ["target", "Cargo.lock"]
 
 [dev-dependencies]
 quickcheck = "0.9.2"
+criterion = "0.3"
 
 [features]
 default = []
 use_std = []
+
+[[bench]]
+name = "bench"
+harness = false
