@@ -5,9 +5,12 @@ extern crate criterion;
 use core::hash::Hasher;
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput, BenchmarkId};
 
-fn gigabyte(c: &mut Criterion) {
-    let buf = vec![15; 4 * 4096];
-    let sizes = [8, 64, 1024, 4096, 4 * 4096];
+fn describe_benches(c: &mut Criterion) {
+    // shared buffers for all tests
+    let buf = vec![15; 16 * 1024];
+
+    // shared/n and buffer/n are executed for these sizes
+    let sizes = [64, 1024, 4096, 16 * 1024];
 
     let mut group = c.benchmark_group("buffer");
 
@@ -46,5 +49,5 @@ fn gigabyte(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, gigabyte);
+criterion_group!(benches, describe_benches);
 criterion_main!(benches);
