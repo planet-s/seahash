@@ -36,6 +36,7 @@ fn hash_chunking_vs_not() {
     assert_eq!(hash1, hash2);
     assert_eq!(hash1, reference);
     assert_eq!(hash1, buffer);
+    assert_eq!(hash1, 0xa06e72e1b06144a0);
 }
 
 #[test]

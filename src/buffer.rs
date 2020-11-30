@@ -285,6 +285,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)] // very slow to run on miri
     fn zero() {
         let arr = [0; 4096];
         for n in 0..4096 {
