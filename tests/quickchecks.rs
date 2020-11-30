@@ -11,6 +11,7 @@ use std::hash::Hasher;
 use std::num::{NonZeroUsize, NonZeroU8};
 
 quickcheck! {
+    #[cfg_attr(miri, ignore)] // very slow to run on miri
     fn chunked_matches_buffered(xs: Vec<u8>, chunk_size: NonZeroUsize, times: NonZeroU8, additional: u8) -> TestResult {
         let target_size = xs.len() * times.get() as usize + additional as usize;
         if xs.is_empty() || target_size > 10_000_000 {
