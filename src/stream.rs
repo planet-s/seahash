@@ -57,7 +57,7 @@ impl SeaHasher {
         unsafe {
             let mut this = self.tail.to_le_bytes();
             let mut ptr = bytes.as_ptr();
-            ptr.copy_to_nonoverlapping(&mut this[self.ntail], copied);
+            ptr.copy_to_nonoverlapping(this.as_mut_ptr().add(self.ntail), copied);
             // It will be at most 8
             if copied + self.ntail != 8 {
                 self.ntail += copied;
