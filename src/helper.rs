@@ -23,7 +23,7 @@ pub fn read_int(buf: &[u8]) -> u64 {
                 let b = *ptr.offset(2) as u64;
 
                 a | (b << 16)
-            },
+            }
             // u32.
             4 => (ptr as *const u32).read_unaligned().to_le() as u64,
             // u32 + u8.
@@ -32,14 +32,14 @@ pub fn read_int(buf: &[u8]) -> u64 {
                 let b = *ptr.offset(4) as u64;
 
                 a | (b << 32)
-            },
+            }
             // u32 + u16.
             6 => {
                 let a = (ptr as *const u32).read_unaligned().to_le() as u64;
                 let b = (ptr.offset(4) as *const u16).read_unaligned().to_le() as u64;
 
                 a | (b << 32)
-            },
+            }
             // u32 + u16 + u8.
             7 => {
                 let a = (ptr as *const u32).read_unaligned().to_le() as u64;
@@ -47,7 +47,7 @@ pub fn read_int(buf: &[u8]) -> u64 {
                 let c = *ptr.offset(6) as u64;
 
                 a | (b << 32) | (c << 48)
-            },
+            }
             _ => 0,
         }
     }

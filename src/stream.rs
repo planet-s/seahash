@@ -18,7 +18,12 @@ pub struct SeaHasher {
 
 impl Default for SeaHasher {
     fn default() -> SeaHasher {
-        SeaHasher::with_seeds(0x16f11fe89b0d677c, 0xb480a793d8e6c86c, 0x6fe2e5aaf078ebc9, 0x14f994a4c5259381)
+        SeaHasher::with_seeds(
+            0x16f11fe89b0d677c,
+            0xb480a793d8e6c86c,
+            0x6fe2e5aaf078ebc9,
+            0x14f994a4c5259381,
+        )
     }
 }
 
@@ -69,7 +74,7 @@ impl SeaHasher {
 
                 // We've done the existing tail, now just do the rest in chunks of 4 x u64.
                 ptr = ptr.offset(copied as isize);
-                let end_ptr = ptr.offset((bytes.len()-copied) as isize & !0x1F);
+                let end_ptr = ptr.offset((bytes.len() - copied) as isize & !0x1F);
                 while end_ptr > ptr {
                     self.state.0 = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
                     self.state.1 = helper::diffuse(self.state.1 ^ helper::read_u64(ptr.offset(8)));
@@ -83,24 +88,26 @@ impl SeaHasher {
                 match excessive {
                     0 => {
                         // input was a multiple of 4 x u64 bytes long; no new tail bytes.
-                    },
+                    }
                     1..=7 => {
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr as *const u8, excessive));
+                        self.tail =
+                            helper::read_int(slice::from_raw_parts(ptr as *const u8, excessive));
                         self.ntail = excessive;
                         // self.written does not need to be updated as we only gathered self.tail
                         // bytes after larger chunks.
-                    },
+                    }
                     8 => {
                         self.push(helper::read_u64(ptr));
                         // self.written is updated by self.push
-                    },
+                    }
                     9..=15 => {
                         self.push(helper::read_u64(ptr));
                         excessive -= 8;
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr.offset(8), excessive));
+                        self.tail =
+                            helper::read_int(slice::from_raw_parts(ptr.offset(8), excessive));
                         self.ntail = excessive;
                         // self.written is updated by self.push
-                    },
+                    }
                     16 => {
                         let a = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
                         let b = helper::diffuse(self.state.1 ^ helper::read_u64(ptr.offset(8)));
@@ -110,7 +117,7 @@ impl SeaHasher {
                         self.state.2 = a;
                         self.state.3 = b;
                         self.written += 16;
-                    },
+                    }
                     17..=23 => {
                         let a = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
                         let b = helper::diffuse(self.state.1 ^ helper::read_u64(ptr.offset(8)));
@@ -120,10 +127,11 @@ impl SeaHasher {
                         self.state.2 = a;
                         self.state.3 = b;
                         excessive -= 16;
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr.offset(16), excessive));
+                        self.tail =
+                            helper::read_int(slice::from_raw_parts(ptr.offset(16), excessive));
                         self.ntail = excessive;
                         self.written += 16;
-                    },
+                    }
                     24 => {
                         let a = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
                         let b = helper::diffuse(self.state.1 ^ helper::read_u64(ptr.offset(8)));
@@ -133,7 +141,7 @@ impl SeaHasher {
                         self.state.2 = b;
                         self.state.3 = c;
                         self.written += 24;
-                    },
+                    }
                     _ => {
                         let a = helper::diffuse(self.state.0 ^ helper::read_u64(ptr));
                         let b = helper::diffuse(self.state.1 ^ helper::read_u64(ptr.offset(8)));
@@ -143,7 +151,8 @@ impl SeaHasher {
                         self.state.2 = b;
                         self.state.3 = c;
                         excessive -= 24;
-                        self.tail = helper::read_int(slice::from_raw_parts(ptr.offset(24), excessive));
+                        self.tail =
+                            helper::read_int(slice::from_raw_parts(ptr.offset(24), excessive));
                         self.ntail = excessive;
                         self.written += 24;
                     }
@@ -161,7 +170,9 @@ impl Hasher for SeaHasher {
         } else {
             self.state.0
         };
-        helper::diffuse(a ^ self.state.1 ^ self.state.2 ^ self.state.3 ^ self.written + self.ntail as u64)
+        helper::diffuse(
+            a ^ self.state.1 ^ self.state.2 ^ self.state.3 ^ self.written + self.ntail as u64,
+        )
     }
 
     fn write(&mut self, bytes: &[u8]) {
@@ -217,24 +228,21 @@ mod tests {
 
     #[test]
     fn chunked_equiv() {
-        let test_buf: &[u8] = &[0xFF, 0xFF, 0xFF, 0xFF,
-                                0xFF, 0xFF, 0xFF, 0xFF,
-                                0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00];
+        let test_buf: &[u8] = &[
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+        ];
 
         let mut stream_hasher1 = SeaHasher::default();
         Hasher::write(&mut stream_hasher1, test_buf);
-
 
         let mut stream_hasher2 = SeaHasher::default();
         Hasher::write(&mut stream_hasher2, &test_buf[..8]);
         Hasher::write(&mut stream_hasher2, &test_buf[8..]);
 
-
         let mut stream_hasher3 = SeaHasher::default();
         Hasher::write(&mut stream_hasher3, &test_buf[..3]);
         Hasher::write(&mut stream_hasher3, &test_buf[3..]);
-
 
         let mut stream_hasher4 = SeaHasher::default();
         Hasher::write_u16(&mut stream_hasher4, 0xffff);
@@ -249,16 +257,27 @@ mod tests {
 
     #[test]
     fn match_optimized() {
-        let test_buf: &[u8] = &[0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF,
-            0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00];
+        let test_buf: &[u8] = &[
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+        ];
 
-        let mut sea_hasher = SeaHasher::with_seeds(0xe7b0c93ca8525013, 0x011d02b854ae8182, 0x7bcc5cf9c39cec76, 0xfa336285d102d083);
+        let mut sea_hasher = SeaHasher::with_seeds(
+            0xe7b0c93ca8525013,
+            0x011d02b854ae8182,
+            0x7bcc5cf9c39cec76,
+            0xfa336285d102d083,
+        );
         sea_hasher.write(test_buf);
         let stream_hash = sea_hasher.finish();
 
-        let buffer_hash = hash_seeded(test_buf, 0xe7b0c93ca8525013, 0x011d02b854ae8182, 0x7bcc5cf9c39cec76, 0xfa336285d102d083);
+        let buffer_hash = hash_seeded(
+            test_buf,
+            0xe7b0c93ca8525013,
+            0x011d02b854ae8182,
+            0x7bcc5cf9c39cec76,
+            0xfa336285d102d083,
+        );
 
         assert_eq!(buffer_hash, stream_hash)
     }

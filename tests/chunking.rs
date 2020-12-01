@@ -7,7 +7,8 @@ use std::hash::Hasher;
 fn hash_chunking_vs_not() {
     // originally from https://gitlab.redox-os.org/redox-os/seahash/issues/5
     let c1: &[u8] = b"This hashing algorithm was extracted from the Rustc compiler.";
-    let c2: &[u8] = b" This is the same hashing algoirthm used for some internal operations in FireFox.";
+    let c2: &[u8] =
+        b" This is the same hashing algoirthm used for some internal operations in FireFox.";
     let c3: &[u8] = b" The strength of this algorithm is in hashing 8 bytes at a time on 64-bit platforms, where the FNV algorithm works on one byte at a time.";
 
     let mut h1 = H::default();
@@ -43,7 +44,8 @@ fn hash_chunking_vs_not() {
 fn test_different_chunk_sizes() {
     let v = {
         let c1: &[u8] = b"This hashing algorithm was extracted from the Rustc compiler.";
-        let c2: &[u8] = b" This is the same hashing algoirthm used for some internal operations in FireFox.";
+        let c2: &[u8] =
+            b" This is the same hashing algoirthm used for some internal operations in FireFox.";
         let c3: &[u8] = b" The strength of this algorithm is in hashing 8 bytes at a time on 64-bit platforms, where the FNV algorithm works on one byte at a time.";
 
         [c1, c2, c3].concat()

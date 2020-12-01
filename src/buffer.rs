@@ -68,7 +68,7 @@ impl State {
             let mut excessive = buf.len() as usize + buf.as_ptr() as usize - end_ptr as usize;
             // Handle the excessive bytes.
             match excessive {
-                0 => {},
+                0 => {}
                 1..=7 => {
                     // 1 or more excessive.
 
@@ -77,7 +77,7 @@ impl State {
 
                     // Diffuse.
                     a = helper::diffuse(a);
-                },
+                }
                 8 => {
                     // 8 bytes excessive.
 
@@ -86,7 +86,7 @@ impl State {
 
                     // Diffuse.
                     a = helper::diffuse(a);
-                },
+                }
                 9..=15 => {
                     // More than 8 bytes excessive.
 
@@ -100,15 +100,14 @@ impl State {
                     // Diffuse.
                     a = helper::diffuse(a);
                     b = helper::diffuse(b);
-
-                },
+                }
                 16 => {
                     // 16 bytes excessive.
 
                     // Mix in the partial block.
                     a = helper::diffuse(a ^ helper::read_u64(ptr));
                     b = helper::diffuse(b ^ helper::read_u64(ptr.offset(8)));
-                },
+                }
                 17..=23 => {
                     // 16 bytes or more excessive.
 
@@ -124,7 +123,7 @@ impl State {
                     a = helper::diffuse(a);
                     b = helper::diffuse(b);
                     c = helper::diffuse(c);
-                },
+                }
                 24 => {
                     // 24 bytes excessive.
 
@@ -137,7 +136,7 @@ impl State {
                     a = helper::diffuse(a);
                     b = helper::diffuse(b);
                     c = helper::diffuse(c);
-                },
+                }
                 _ => {
                     // More than 24 bytes excessive.
 
@@ -209,7 +208,13 @@ impl State {
     /// Finalize the state.
     #[inline]
     pub fn finalize(self) -> u64 {
-        let State { written, mut a, b, mut c, d } = self;
+        let State {
+            written,
+            mut a,
+            b,
+            mut c,
+            d,
+        } = self;
 
         // XOR the states together. Even though XOR is commutative, it doesn't matter, because the
         // state vector's initial components are mutually distinct, and thus swapping even and odd
@@ -247,7 +252,13 @@ impl State {
 ///
 /// The seed of this hash function is prechosen.
 pub fn hash(buf: &[u8]) -> u64 {
-    hash_seeded(buf, 0x16f11fe89b0d677c, 0xb480a793d8e6c86c, 0x6fe2e5aaf078ebc9, 0x14f994a4c5259381)
+    hash_seeded(
+        buf,
+        0x16f11fe89b0d677c,
+        0xb480a793d8e6c86c,
+        0x6fe2e5aaf078ebc9,
+        0x14f994a4c5259381,
+    )
 }
 
 /// Hash some buffer according to a chosen seed.
@@ -277,11 +288,26 @@ mod tests {
 
     fn hash_match(a: &[u8]) {
         assert_eq!(hash(a), reference::hash(a));
-        assert_eq!(hash_seeded(a, 1, 1, 1, 1), reference::hash_seeded(a, 1, 1, 1, 1));
-        assert_eq!(hash_seeded(a, 500, 2873, 2389, 9283), reference::hash_seeded(a, 500, 2873, 2389, 9283));
-        assert_eq!(hash_seeded(a, 238945723984, 872894734, 239478243, 28937498234), reference::hash_seeded(a, 238945723984, 872894734, 239478243, 28937498234));
-        assert_eq!(hash_seeded(a, !0, !0, !0, !0), reference::hash_seeded(a, !0, !0, !0, !0));
-        assert_eq!(hash_seeded(a, 0, 0, 0, 0), reference::hash_seeded(a, 0, 0, 0, 0));
+        assert_eq!(
+            hash_seeded(a, 1, 1, 1, 1),
+            reference::hash_seeded(a, 1, 1, 1, 1)
+        );
+        assert_eq!(
+            hash_seeded(a, 500, 2873, 2389, 9283),
+            reference::hash_seeded(a, 500, 2873, 2389, 9283)
+        );
+        assert_eq!(
+            hash_seeded(a, 238945723984, 872894734, 239478243, 28937498234),
+            reference::hash_seeded(a, 238945723984, 872894734, 239478243, 28937498234)
+        );
+        assert_eq!(
+            hash_seeded(a, !0, !0, !0, !0),
+            reference::hash_seeded(a, !0, !0, !0, !0)
+        );
+        assert_eq!(
+            hash_seeded(a, 0, 0, 0, 0),
+            reference::hash_seeded(a, 0, 0, 0, 0)
+        );
     }
 
     #[test]
@@ -301,7 +327,6 @@ mod tests {
         }
         hash_match(&buf);
     }
-
 
     #[test]
     fn position_depedent() {
@@ -353,7 +378,16 @@ mod tests {
         state.push(!0);
         state.push(0);
 
-        assert_eq!(hash_seeded(&[0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0], 1, 2, 3, 4), state.finalize());
+        assert_eq!(
+            hash_seeded(
+                &[0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0],
+                1,
+                2,
+                3,
+                4
+            ),
+            state.finalize()
+        );
     }
 
     #[test]
@@ -363,6 +397,15 @@ mod tests {
         state.push(0);
         state.pop(0);
 
-        assert_eq!(hash_seeded(&[0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF], 1, 2, 3, 4), state.finalize());
+        assert_eq!(
+            hash_seeded(
+                &[0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+                1,
+                2,
+                3,
+                4
+            ),
+            state.finalize()
+        );
     }
 }

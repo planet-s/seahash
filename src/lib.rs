@@ -159,9 +159,9 @@ extern crate core as std;
 pub use buffer::{hash, hash_seeded, State};
 pub use stream::SeaHasher;
 
-pub mod reference;
 mod buffer;
 mod helper;
+pub mod reference;
 mod stream;
 
 #[cfg(feature = "use_std")]

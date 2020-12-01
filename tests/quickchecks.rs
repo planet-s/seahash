@@ -4,11 +4,11 @@ extern crate seahash;
 extern crate quickcheck;
 use quickcheck::TestResult;
 
-use seahash::SeaHasher;
 use seahash::hash;
 use seahash::reference::hash as reference;
+use seahash::SeaHasher;
 use std::hash::Hasher;
-use std::num::{NonZeroUsize, NonZeroU8};
+use std::num::{NonZeroU8, NonZeroUsize};
 
 quickcheck! {
     #[cfg_attr(miri, ignore)] // very slow to run on miri
