@@ -12,41 +12,131 @@ pub fn read_int(buf: &[u8]) -> u64 {
     unsafe {
         // Break it down to reads of integers with widths in total spanning the buffer. This minimizes
         // the number of reads
-        match buf.len() {
+        // The right-most match will also be 0..4 due to the size of a u32
+        match (buf.len(), ptr as usize & core::mem::align_of::<u32>()) {
             // u8.
-            1 => *ptr as u64,
+            // We don't case about our alignment because we just read the pointer
+            (1, _) => *ptr as u64,
             // u16.
-            2 => (ptr as *const u16).read_unaligned().to_le() as u64,
-            // u16 + u8.
-            3 => {
+            // For a u16, even if its unaligned we can't do any better
+            (2, _) => (ptr as *const u16).read_unaligned().to_le() as u64,
+            // If our alignment is even, then read the u16 first
+            (3, x) if x & 1 == 0 => {
+                // u16 + u8.
                 let a = (ptr as *const u16).read_unaligned().to_le() as u64;
                 let b = *ptr.offset(2) as u64;
 
                 a | (b << 16)
             }
+            // Otherwise read the u8 first to align the u16 read
+            (3, _) => {
+                // u8 + u16
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u16).read_unaligned().to_le() as u64;
+
+                a | (b << 8)
+            }
             // u32.
-            4 => (ptr as *const u32).read_unaligned().to_le() as u64,
+            (4, 0) => (ptr as *const u32).read_unaligned().to_le() as u64,
+            (4, 2) => {
+                let a = (ptr as *const u16).read_unaligned().to_le() as u64;
+                let b = (ptr.offset(2) as *const u16).read_unaligned().to_le() as u64;
+
+                a | (b << 16)
+            }
+            (4, _) => (ptr as *const u32).read_unaligned().to_le() as u64,
             // u32 + u8.
-            5 => {
+            (5, 0) => {
                 let a = (ptr as *const u32).read_unaligned().to_le() as u64;
                 let b = *ptr.offset(4) as u64;
 
                 a | (b << 32)
             }
-            // u32 + u16.
-            6 => {
+            (5, 1) => {
+                // u8 + u16 + u16
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u16).read_unaligned().to_le() as u64;
+                let c = (ptr.offset(3) as *const u16).read_unaligned().to_le() as u64;
+
+                a | (b << 8) | (c << 24)
+            }
+            (5, 2) => {
+                // u16 + u16 + u8
+                let a = (ptr as *const u16).read_unaligned().to_le() as u64;
+                let b = (ptr.offset(2) as *const u16).read_unaligned().to_le() as u64;
+                let c = *ptr.offset(4) as u64;
+
+                a | (b << 16) | (c << 32)
+            }
+            (5, _) => {
+                // u8 + u32
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u32).read_unaligned().to_le() as u64;
+
+                a | (b << 8)
+            }
+            (6, 0) => {
+                // u32 + u16
                 let a = (ptr as *const u32).read_unaligned().to_le() as u64;
                 let b = (ptr.offset(4) as *const u16).read_unaligned().to_le() as u64;
 
                 a | (b << 32)
             }
-            // u32 + u16 + u8.
-            7 => {
+            (6, 1) => {
+                // u8 + u16 + u16 + u8
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u16).read_unaligned().to_le() as u64;
+                let c = (ptr.offset(3) as *const u16).read_unaligned().to_le() as u64;
+                let d = *ptr.offset(5) as u64;
+
+                a | (b << 8) | (c << 24) | (d << 40)
+            }
+            (6, 2) => {
+                // u16 + u32
+                let a = (ptr as *const u16).read_unaligned().to_le() as u64;
+                let b = (ptr.offset(4) as *const u32).read_unaligned().to_le() as u64;
+
+                a | (b << 16)
+            }
+            (6, _) => {
+                // u8 + u32 + u8
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u32).read_unaligned().to_le() as u64;
+                let c = *ptr.offset(5) as u64;
+
+                a | (b << 8) | (c << 40)
+            }
+            (7, 0) => {
+                // u32 + u16 + u8.
                 let a = (ptr as *const u32).read_unaligned().to_le() as u64;
                 let b = (ptr.offset(4) as *const u16).read_unaligned().to_le() as u64;
                 let c = *ptr.offset(6) as u64;
 
                 a | (b << 32) | (c << 48)
+            }
+            (7, 1) => {
+                // u8 + u16 + u32.
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u16).read_unaligned().to_le() as u64;
+                let c = (ptr.offset(3) as *const u32).read_unaligned().to_le() as u64;
+
+                a | (b << 8) | (c << 24)
+            }
+            (7, 2) => {
+                // u16 + u32 + u8.
+                let a = (ptr as *const u16).read_unaligned().to_le() as u64;
+                let b = (ptr.offset(2) as *const u32).read_unaligned().to_le() as u64;
+                let c = *ptr.offset(6) as u64;
+
+                a | (b << 16) | (c << 48)
+            }
+            (7, _) => {
+                // u8 + u32 + u16.
+                let a = *ptr as u64;
+                let b = (ptr.offset(1) as *const u32).read_unaligned().to_le() as u64;
+                let c = (ptr.offset(5) as *const u16).read_unaligned().to_le() as u64;
+
+                a | (b << 8) | (c << 40)
             }
             _ => 0,
         }
